@@ -1,0 +1,28 @@
+<p> {{title}}</p>
+<form method="POST" id="map_form">
+    <table>
+
+    <tr>
+        <th>ID</th>
+        <th>Name</th>
+        <th>Manage</th>
+    </tr>
+
+    {{#each results}}
+        <tr>
+            <td>{{this.map_id}}</td>
+            <td>{{this.map_name}}</td>
+            <td><button type="button" form="map_form" id="update{{this.map_id}}">Update</button></td>
+            <td><button type="submit" formaction="/deleteMap" form="map_form" name="delete_button" value="{{this.map_id}}">Delete</button></td>
+        </tr>
+
+    {{/each}}
+
+        <tr>
+            <td>new</td>
+            <td><input type="text" name="newMapName" form="map_form"></td>
+            <td>-</td>
+            <td><button type="submit" formaction="/newMap" form="map_form" id="addButton">Add</button></td>
+        </tr>
+    </table>
+</form>

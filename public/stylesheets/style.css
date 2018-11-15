@@ -1,0 +1,40 @@
+body {
+  font: 14px "Lucida Grande", Helvetica, Arial, sans-serif;
+    background-color:lightblue;
+}
+
+a {
+  color: #00B7FF;
+}
+
+#mainDiv{}
+
+#navigation{
+
+    color:white;
+}
+
+td{
+    margin: 5px;
+    padding:5px;
+}
+th{
+    margin: 5px;
+    padding:5px;
+}
+table{
+
+}
+
+h1{
+    font-size: 2em;
+}
+.padding10{
+    padding: 20px;
+}
+.roundedEdge{
+    border-radius:10px;
+}
+.whitebg{
+    background-color: white;
+}

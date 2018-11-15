@@ -1,0 +1,51 @@
+<h1>Activity for User {{userName}}</h1>
+
+<div>
+    <h1> Teams: </h1></pr>
+    <table>
+        <tr>
+            <th>Team name</th>
+            <th>Join Date</th>
+            <th>Leave Date</th>
+        </tr>
+
+        {{#each activity}}
+            <tr>
+                <td><a href="/teams/{{this.team_id}}">"{{this.team_name}}</a></td>
+                <td>{{this.join_date}}</td>
+                <td>{{this.leave_date}}</td>
+            </tr>
+        {{/each}}
+    </table>
+
+    <pr><h1> Matches: </h1></pr>
+
+    <table>
+
+        <tr>
+            <th>Home Team</th>
+            <th>Home Score</th>
+            <th>Away Score</th>
+            <th>Away Team</th>
+            <th>Map</th>
+            <th>Date</th>
+        </tr>
+
+            {{#each matches}}
+                <tr>
+                    <td><a href="/teams/{{this.team1_id}}">{{this.[home team]}}</a></td>
+                    <td>{{this.team1_score}}</td>
+                    <td>{{this.team2_score}}</td>
+                    <td><a href="/teams/{{this.team2_id}}">{{this.away_team}}</a></td>
+                    <td>{{this.map_name}}</td>
+                    <td>{{this.match_date}}</td>
+
+                    <td><button type="button" form="match_form">Delete</button></td>
+                </tr>
+
+            {{/each}}
+
+
+    </table>
+
+</div>

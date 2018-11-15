@@ -1,0 +1,47 @@
+
+
+<p><h1>Information for League {{league_name}}</h1></p>
+    <p>
+        League begins: {{start}}<br>
+        League ends: {{end}}
+    </p>
+
+<p>
+    <strong>Teams:</strong>
+</p>
+    <form method="POST" id="league_form">
+
+        <table>
+
+            <tr>
+                <th>ID</th>
+                <th>Name</th>
+                <th>Score</th>
+                <th>Division</th>
+            </tr>
+
+            {{#each teams }}
+                <tr>
+                    <td>{{this.team_id}}</td>
+                    <td><a href="/teams/{{this.team_id}}">{{this.team_name}}</a></td>
+                    <td>TBD</td>
+                    <td><button type="button" form="league_form" id="update{{this.team_id}}">Update</button></td>
+                    <td><button type="submit" formaction="/deleteTeam"form="league_form" value="{{this.team_id}}" name="delete_button" >Delete</button></td>
+                </tr>
+
+            {{/each}}
+
+            <tr>
+                <td>new</td>
+                <input type="hidden" name="originatesFrom"  form="league_form" value="../leagues/{{this.league_id}}/">
+                <td><input type="text" name="newTeamName{{this.league_id}}" form="league_form"></td>
+                <td>NA</td>
+                <td><button type="submit" formaction = "/newTeam/{{this.league_id}}" form="league_form">Add</button></td>
+            </tr>
+        </table>
+
+    </form>
+    <br>
+    <br>
+
+

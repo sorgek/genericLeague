@@ -1,0 +1,31 @@
+<p> <h1>Leagues in Season {{seasonNumb}}</h1></p>
+<form method="POST" id="league_form">
+    <p>
+        <strong>Teams: </strong>
+    </p>
+    <table>
+
+        <tr>
+            <th>ID</th>
+            <th>Name</th>
+            <th>Manage</th>
+        </tr>
+
+        {{#each results}}
+            <tr>
+                <td>{{this.league_id}}</td>
+
+                <td><a href="/leagues/{{this.league_id}}">{{this.league_name}}</a></td>
+                <td><button type="submit" formaction="/deleteLeague" name="delete_button" value="{{this.league_id}}" form="league_form">Delete</button></td>
+            </tr>
+
+        {{/each}}
+
+        <tr>
+            <td>new</td>
+            <input type="hidden" name="originatesFrom" form="league_form" value="../leagues">
+            <td><input type="text" name="newLeagueName" form="league_form"></td>
+            <td><button type="submit" formaction="/newLeague" form="league_form">Add</button></td>
+        </tr>
+    </table>
+</form>
