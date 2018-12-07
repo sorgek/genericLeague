@@ -1,19 +1,22 @@
 
-<h1>Users on {{teamName}} :</h1>
+<h1>Team {{teamName}} </h1>
 <p>
    <strong>League: </strong> {{leagueName}}
 </p>
 <p>
     <strong>About: </strong>{{description}}
 </p>
+    <p> Users currently on team.  Adding a user automatically adds it to the team.  This is the only way to add users.</p>
 <form method="POST" id="team_form" method="post">
     <input type="hidden" name="originatesFrom"  form="team_form" value="../teams/{{teamID}}/">
 
     <table>
+        <td><u> Current Team Members: </u></td>
 
         <tr>
             <th>User ID</th>
             <th>Name</th>
+            <th>Date Joined</th>
             <th>Manage</th>
         </tr>
 
@@ -21,8 +24,9 @@
             <tr>
                 <td>{{this.user_id}}</td>
                 <td><a href="/users/{{this.user_id}}">{{this.user_name}}</a></td>
-                <td><button type="submit" name="delete_button" formaction="/deleteUser" value="{{this.user_id}}" form="team_form">Delete</button></td>
-                <td><button type="button"  form="team_form">Kick</button></td>
+                <td>joined: {{this.join_date}}</td>
+                <td><button type="button" class ="delete_botton" name="delete_button" formaction="/deleteUser" value="{{this.user_id}}" form="team_form">Delete</button></td>
+                <td><button type="button" name="kick_button" formaction="/kickUser/{{this.user_id}}/{{@root.teamID}}"  form="team_form">Kick</button></td>
             </tr>
 
         {{/each}}
@@ -30,11 +34,37 @@
         <tr>
             <td>new</td>
             <td><input type="text" name="newUsername" form="team_form"></td>
+            <td></td>
             <td><button type="submit" name="addButton" form="team_form">Add</button></td>
         </tr>
     </table>
 </form>
+
+<table id="kicked_form">
+    <td><u> Past Team Members: </u></td>
+    <tr>
+        <th>User ID</th>
+        <th>Name</th>
+        <th>Date Joined</th>
+        <th>Date Left</th>
+        <th>Manage</th>
+    </tr>
+
+    {{#each kicked}}
+        <tr>
+            <td>{{this.user_id}}</td>
+            <td><a href="/users/{{this.user_id}}">{{this.user_name}}</a></td>
+            <td> {{this.join_date}}</td>
+            <td> {{this.leave_date}}</td>
+            <td><button type="submit" name="delete_button" class ="delete_botton" formaction="/deleteUser" value="{{this.user_id}}" form="kickd_form">Delete</button></td>
+        </tr>
+    {{/each}}
+</table>
+<br>
+
 {{#ifLeague this.leagueName}}
+    <p>Matches for the team.  The match has a 1:M with Teams / Maps.  Deleting Teams should kill any related matches.</p>
+    <p> If there is no team in the Away drop down box, go back and add more teams to the league.</p>
 <div>
     <h1> Matches: </h1>
     <form method="POST" id="match_form">
@@ -58,7 +88,7 @@
                     <td><a href="/teams/{{this.team2_id}}">{{this.away_team}}</a></td>
                     <td>{{this.map_name}}</td>
                     <td>{{this.match_date}}</td>
-                    <td><button type="submit" name="delete_button" formaction="/deleteMatch" value="{{this.match_id}}" form="team_form">Delete</button></td>
+                    <td><button type="button" name="delete_button" formaction="/deleteMatch" value="{{this.match_id}}" form="team_form">Delete</button></td>
                 </tr>
 
             {{/each}}
@@ -82,9 +112,11 @@
                 </select>
                 <td><input type="date" form="match_form" name="addmatch_date"></td>
                 <td><button type="submit" formaction="/newmatch" form="match_form">Add</button></td>
+
             </tr>
 
         </table>
     </form>
 </div>
 {{/ifLeague}}
+<script src='/javascripts/preventDelete.js'></script>

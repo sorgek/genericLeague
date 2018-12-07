@@ -1,5 +1,5 @@
 {{#if maps.length}}
-
+{{message}}
 <strong>Map Results: </strong>
 <ul>{{#each maps as |map| }}
     <li><a href="/maps/"> {{map.map_name}}</a></li>
@@ -30,3 +30,7 @@
     {{/each}}
     </ul>
 {{/if}}
+
+{{#noResults maps.length}}
+    No results found for <i>{{searchTerm}}</i>
+{{/noResults}}

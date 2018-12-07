@@ -16,7 +16,7 @@
                 <td>{{this.league_id}}</td>
 
                 <td><a href="/leagues/{{this.league_id}}">{{this.league_name}}</a></td>
-                <td><button type="submit" formaction="/deleteLeague" name="delete_button" value="{{this.league_id}}" form="league_form">Delete</button></td>
+                <td><button type="button" formaction="/deleteLeague" name="delete_button" value="{{this.league_id}}" form="league_form">Delete</button></td>
             </tr>
 
         {{/each}}
@@ -27,5 +27,7 @@
             <td><input type="text" name="newLeagueName" form="league_form"></td>
             <td><button type="submit" formaction="/newLeague" form="league_form">Add</button></td>
         </tr>
+
     </table>
 </form>
+<script src='/javascripts/preventDelete.js'></script>

@@ -2,8 +2,9 @@
 
 <p><h1>Teams for Season {{seasonNumber}}</h1></p>
 
+
 {{#each leagues as |lg| }}
-    Teams in League {{lg.league_name}}
+    Teams in League <u>{{lg.league_name}}</u>
     <form method="POST" id="team_form{{lg.league_id}}">
 
         <table>
@@ -11,17 +12,22 @@
             <tr>
                 <th>ID</th>
                 <th>Name</th>
-                <th>Score</th>
-                <th>Division</th>
+                <th>Manage</th>
             </tr>
 
             {{#each teams }}
                 <tr>
                     <td>{{this.team_id}}</td>
-                    <td><a href="/teams/{{this.team_id}}">{{this.team_name}}</a></td>
-                    <td>TBD</td>
-                    <td><button type="button" form="team_form{{lg.league_id}}" >Update</button></td>
-                    <td><button type="submit" name="delete_button" value="{{this.team_id}}" formaction="/deleteTeam" form="team_form{{lg.league_id}}" >Delete</button></td>
+
+
+                    <td>
+                        <input id="edit_{{this.team_id}}" type="hidden"
+                                                          form="team_form{{lg.league_id}}">
+                        <a id="name_{{this.team_id}}" href="/teams/{{this.team_id}}">{{this.team_name}}</a></td>
+                    <td><button type="button" id="update_{{this.team_id}}"  class="updateTeam" value="{{this.team_id}}" form="team_form{{lg.league_id}}" >Update</button></td>
+                    <td><button type="button" id="delete_{{this.team_id}}" class="deleteTeam" name="delete_button" value="{{this.team_id}}" formaction="/deleteTeam" form="team_form{{lg.league_id}}" >Delete</button></td>
+                    <td><button type="button" id="delete_{{this.team_id}}" class="removeFromLeague" name="remove_button" value="{{this.team_id}}" formaction="/removeTeam/{{lg.league_id}}" form="team_form{{lg.league_id}}" >RemoveFromLeague</button></td>
+
                 </tr>
 
             {{/each}}
@@ -31,10 +37,23 @@
                 <input type="hidden" name="originatesFrom"  form="team_form{{lg.league_id}}" value="../teams/">
 
                 <input type="hidden" name="leagueID{{lg.league_id}}" value="{{lg.league_id}} form="team_form{{lg.league_id}}"">
-                <td><input type="text" name="newTeamName{{lg.league_id}}" form="team_form{{lg.league_id}}" ></td>
-                <td>NA</td>
-                <td><button type="submit" formaction = "/newTeam/{{lg.league_id}}" form="team_form{{lg.league_id}}">Add</button></td>
+                <td><input type="text" class="newTeam"  name="newTeamName{{lg.league_id}}" form="team_form{{lg.league_id}}" ></td>
+                <td><button type="submit" formaction = "/newTeam/{{lg.league_id}}" form="team_form{{lg.league_id}}">Create New Team</button></td>
+
             </tr>
+
+            <tr>
+                <td>new</td>
+
+                <td><select form="team_form{{lg.league_id}}" name="addExistingTeam">
+                    {{#each @root.nullTeams}}
+                        <option value="{{this.team_id}}">{{this.team_name}}</option>
+                    {{/each}}
+                </select></td>
+                <input type="hidden" name="originatesFrom" form="team_form{{lg.league_id}} "value="../leagues">
+                <td><button type="submit" formaction="/addExistantTeam/{{lg.league_id}}" form="team_form{{lg.league_id}}">Add Existing team to league</button></td>
+            </tr>
+
         </table>
 
     </form>
@@ -42,3 +61,16 @@
     <br>
 
 {{/each}}
+
+
+<table>
+
+    <tr>
+        <th>ID</th>
+        <th>Name</th>
+        <th>Manage</th>
+    </tr>
+
+</table>
+<script src='/javascripts/script.js' ></script>
+

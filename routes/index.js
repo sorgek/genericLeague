@@ -26,6 +26,7 @@ router.get('/search_results', function(req,res,next) {
     var DB = new DatabaseHandler();
     console.log(JSON.stringify(req.query));
     var terms = [];
+    context.searchTerm = req.query.searchTerm;
     terms = req.query.searchTerm.split(/[ ,]+/);
     context.title = "SearchResults ";
     console.log(terms);
@@ -38,6 +39,9 @@ router.get('/search_results', function(req,res,next) {
             if (i === terms.length) {
                 console.log(JSON.stringify(context));
                 DB.close();
+
+
+
                 res.render('search', context);
             } else if (i < terms.length) {
                 var SQL = [ "SELECT map_id, map_name FROM maps WHERE map_name LIKE "
@@ -70,6 +74,8 @@ router.get('/search_results', function(req,res,next) {
             }
         })(0);
         resolve();
+
+
 
     }).catch(err => {
         console.log("oh no " + err);
@@ -121,7 +127,6 @@ router.post('/newLeague', function(req, res, next) {
     }).catch(err =>{
         console.log("oh no " + err);
     });
-
 });
 
 router.post('/deleteLeague', function(req, res){
@@ -192,6 +197,21 @@ router.post('/deleteMap', function(req, res){
     console.log(JSON.stringify(req.body));
 });
 
+router.post('/removeTeam/:leagueID', function(req, res){
+    var DB = new DatabaseHandler();
+    var context = {};
+    console.log("Get outta hear mapp");
+    var SQL = "DELETE FROM leagues_teams WHERE league_id = (?) AND team_id = (?);";
+    var inserts = [req.params.leagueID, req.body.remove_button];
+    console.log(SQL);
+    DB.query(SQL, inserts).then(()=>{
+        DB.close();
+        res.redirect('/teams');
+    }).catch(err =>{
+        console.log("oh no " + err);
+        res.redirect('/teams');
+    });
+});
 
 router.get('/leagues', function(req, res, next) {
     var DB = new DatabaseHandler();
@@ -212,8 +232,6 @@ router.get('/leagues', function(req, res, next) {
 
 
 
-
-
 router.get('/teams', function(req, res, next) {
     var DB = new DatabaseHandler();
     var leagueTeams = {};
@@ -222,36 +240,94 @@ router.get('/teams', function(req, res, next) {
     var createString = "SELECT leagues.league_name, leagues.league_id FROM leagues " +
     "WHERE leagues.season_numb = " + CURRENTSEASONNUMB;
 
+    var nullSQL = "SELECT teams.team_name, teams.team_id FROM teams WHERE teams.team_id NOT IN (SELECT leagues_teams.team_id FROM leagues_teams)";
+
+
     context.title = "Leagues for Season " + CURRENTSEASONNUMB;
     DB.query(createString).then( rows =>{
        context.leagues = rows;
-    }).then(function(){ new Promise((resolve,reject)=> {
+       DB.query(nullSQL).then(rows=>{
+           context.nullTeams = rows;
+       }).then(function(){ new Promise((resolve,reject)=> {
 
-        (function loop(i) {
-            if(i === context.leagues.length){
-                DB.close();
-                res.render('teams', context);
-            }else if (i < context.leagues.length) {
-                createString = "SELECT teams.team_name, teams.team_id, leagues.league_name FROM teams " +
-                    "INNER JOIN leagues_teams ON leagues_teams.team_id = teams.team_id " +
-                    "INNER JOIN leagues ON leagues_teams.league_id = leagues.league_id " +
-                    "WHERE leagues.league_name = " + "'" + context.leagues[i].league_name + "'";
-                DB.query(createString).then(rows => {
-                    var name = "teams";
+            (function loop(i) {
+                if(i === context.leagues.length){
+                    DB.close();
+                    res.render('teams', context);
+                }else if (i < context.leagues.length) {
+                    createString = "SELECT teams.team_name, teams.team_id, leagues.league_name FROM teams " +
+                        "INNER JOIN leagues_teams ON leagues_teams.team_id = teams.team_id " +
+                        "INNER JOIN leagues ON leagues_teams.league_id = leagues.league_id " +
+                        "WHERE leagues.league_name = " + "'" + context.leagues[i].league_name + "'";
+                    DB.query(createString).then(rows => {
+                        var name = "teams";
 
-                    Object.assign(context.leagues[i], {[name]: rows});
+                        Object.assign(context.leagues[i], {[name]: rows});
 
-                }).then(
-                    loop.bind(null, i + 1));
-            }
-        })(0);
-        resolve();
+                    }).then(
+                        loop.bind(null, i + 1));
+                }
+            })(0);
+            resolve();
 
     }).catch(err =>{
         console.log("oh no " + err);
     });
 
-})});
+})})});
+
+
+router.post('/updateTeam/:team_id/', function(req, res, next) {
+    console.log(JSON.stringify(req.body));
+    var DB = new DatabaseHandler();
+    var leagueTeams = {};
+    var context = {};
+    context.seasonNumber = CURRENTSEASONNUMB;
+    var SQL = "UPDATE teams SET teams.team_name = (?) " +
+        "WHERE teams.team_id = (?)";
+    var inserts = [req.body.newTeamName, req.params.team_id]
+    DB.query(SQL, inserts).then( rows =>{
+        context.leagues = rows;
+    }).then( ()=>{
+        DB.close();
+        res.redirect('/teams/');
+    }).catch(err =>{
+        console.log("oh no " + err);
+    });
+
+});
+
+router.post('/kickUser/:userID/:teamID',function(req, res){
+
+    var SQL = "UPDATE teams_users SET leave_date = NOW() WHERE user_id = (?) AND team_id = (?); ";
+    var params = [req.params.userID, req.params.teamID];
+    var DB = new DatabaseHandler();
+
+    DB.deleteFrom(SQL, params).then(()=>{
+
+        console.log("kickerm");
+        res.redirect("../" + req.body.originatesFrom);
+
+    });
+
+});
+
+router.post('/addExistantTeam/:leagueID',function(req, res){
+    console.log(req.body);
+    var SQL = "INSERT INTO leagues_teams(league_id, team_id) VALUES(?,?); ";
+    var params = [req.params.leagueID, req.body.addExistingTeam];
+    var DB = new DatabaseHandler();
+
+    DB.deleteFrom(SQL, params).then(()=>{
+
+        console.log("kickerm");
+        res.redirect("../" + req.body.originatesFrom);
+
+    });
+
+});
+
+
 
 router.post('/newTeam/:leagueID', function(req, res){
 
@@ -356,6 +432,9 @@ router.post('/teams/:team_id', function(req, res) {
         });
     }).catch(err => {
         console.log("oh no " + err);
+
+        res.redirect('/teams/' + req.params.team_id);
+
     });
 });
 
@@ -373,6 +452,8 @@ router.post('/newmatch', function(req, res){
             res.redirect('/teams/' + req.body.addteam1_id);
     }).catch(err => {
         console.log("oh no " + err);
+
+        res.redirect('/teams/' + req.body.addteam1_id);
     });
 });
 
@@ -384,6 +465,16 @@ Handlebars.registerHelper('ifLeague', function(conditional, options){
     }else {
         return options.fn(this);
     }
+
+});
+
+Handlebars.registerHelper('noResults', function(conditional, options){
+    if(conditional === 0){
+        return options.fn(this);
+    }else {
+        return false;
+    }
+
 });
 
 
@@ -398,10 +489,10 @@ router.get('/teams/:team_id', function(req, res, next) {
         "INNER JOIN leagues l ON l.league_id = lt.league_id " +
         "WHERE teams.team_id = " + teamID + ";";
 
-    var createString = "SELECT users.user_id, users.user_name FROM users " +
+    var createString = "SELECT users.user_id, users.user_name, tu.join_date, tu.leave_date FROM users " +
         "INNER JOIN teams_users tu ON tu.user_id = users.user_id " +
         "INNER JOIN teams ON tu.team_id = teams.team_id " +
-        "WHERE teams.team_id = " + teamID + ";";
+        "WHERE teams.team_id = " + teamID + " AND tu.leave_date IS NULL;";
 
     var context = {"teamID": teamID};
     context.title = "Teams";
@@ -423,47 +514,58 @@ router.get('/teams/:team_id', function(req, res, next) {
             }
         }).then( ()=>{
             DB.query(createString).then(rows => {
-                context.results = rows;
-                createString = "SELECT t1.team_name AS `home team`, m.team1_score, m.team2_score, " +
-                    "t2.team_name AS `away_team`,  m.team1_id, m.team2_id, m.match_id, m.match_type, m.match_date, " +
-                    "m.map_id, maps.map_name FROM matches AS m " +
-                    "INNER JOIN teams t1 ON m.team1_id = t1.team_id " +
-                    "INNER JOIN teams t2 ON m.team2_id = t2.team_id " +
-                    "LEFT JOIN maps ON maps.map_id = m.map_id " +
-                    "WHERE m.team1_id = " + teamID + " OR m.team2_id = " + teamID + ";";
-
-            }).then(() => {
                 DB.query(createString).then(rows => {
-                    context.matches = rows;
+                    context.results = rows;
+                    createString = "SELECT users.user_id, users.user_name, tu.join_date, tu.leave_date FROM users " +
+                        "INNER JOIN teams_users tu ON tu.user_id = users.user_id " +
+                        "INNER JOIN teams ON tu.team_id = teams.team_id " +
+                        "WHERE teams.team_id = " + teamID + " AND tu.leave_date IS NOT NULL";
 
-                }).then(rows => {
-                    if(context.leagueName !== "Not currently in any league") {
+                }).then(() => {
+                    DB.query(createString).then(rows => {
+                        context.kicked = rows;
+                        console.log(rows);
+                        createString = "SELECT t1.team_name AS `home team`, m.team1_score, m.team2_score, " +
+                            "t2.team_name AS `away_team`,  m.team1_id, m.team2_id, m.match_id, m.match_type, m.match_date, " +
+                            "m.map_id, maps.map_name FROM matches AS m " +
+                            "INNER JOIN teams t1 ON m.team1_id = t1.team_id " +
+                            "INNER JOIN teams t2 ON m.team2_id = t2.team_id " +
+                            "LEFT JOIN maps ON maps.map_id = m.map_id " +
+                            "WHERE m.team1_id = " + teamID + " OR m.team2_id = " + teamID + ";";
 
-                        SQL = "SELECT t.team_name, t.team_id FROM teams t " +
-                            "INNER JOIN leagues_teams lt ON lt.team_id = t.team_id " +
-                            "INNER JOIN leagues l ON l.league_id = lt.league_id " +
-                            "WHERE t.team_ID <> " + teamID + " AND l.league_id = " + context.leagueID;
-                        DB.query(SQL).then(rows => {
-                            context.teams = rows;
-                            DB.query("SELECT m.map_name, m.map_id FROM maps m;").then(rows => {
-                                context.maps = rows;
+
+                    }).then( () => {
+                        DB.query(createString).then(rows => {
+                            context.matches = rows;
+                            if (context.leagueName !== "Not currently in any league") {
+
+                                SQL = "SELECT t.team_name, t.team_id FROM teams t " +
+                                    "INNER JOIN leagues_teams lt ON lt.team_id = t.team_id " +
+                                    "INNER JOIN leagues l ON l.league_id = lt.league_id " +
+                                    "WHERE t.team_ID <> " + teamID + " AND l.league_id = " + context.leagueID;
+                                DB.query(SQL).then(rows => {
+                                    context.teams = rows;
+                                    DB.query("SELECT m.map_name, m.map_id FROM maps m;").then(rows => {
+                                        context.maps = rows;
+                                        DB.close();
+                                        res.render('team', context);
+                                    });
+
+                                });
+                            } else {
                                 DB.close();
                                 res.render('team', context);
-                            });
-
+                            }
+                        }).catch(err => {
+                            alert("Cannot use that name!");
                         });
-                    }else {
-                        DB.close();
-                        res.render('team', context);
-                    }
-            }).catch(err => {
-                    console.log("oh no " + err);
+                    });
                 });
             });
         });
 
     }).catch(err => {
-        console.log("oh no " + err);
+        res.render('teams', context);
     });
 });
 
